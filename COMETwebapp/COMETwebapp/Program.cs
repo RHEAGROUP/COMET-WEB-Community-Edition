@@ -24,6 +24,7 @@
 
 namespace COMETwebapp
 {
+    using Blazored.LocalStorage;
     using CDP4Dal;
     using COMETwebapp.SessionManagement;
     using Microsoft.AspNetCore.Components.Authorization;
@@ -42,8 +43,9 @@ namespace COMETwebapp
             builder.Services.AddSingleton<ISession, Session>();
 
             builder.Services.AddAuthorizationCore();
+            builder.Services.AddBlazoredLocalStorage();
             builder.Services.AddSingleton<AuthenticationStateProvider, CometWebAuthStateProvider>();
-            builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
+            builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
             builder.Services.AddDevExpressBlazor();
 

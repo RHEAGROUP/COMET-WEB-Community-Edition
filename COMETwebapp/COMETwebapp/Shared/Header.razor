@@ -19,28 +19,41 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program. If not, see http://www.gnu.org/licenses/.
 ------------------------------------------------------------------------------->
+@inject IWebAssemblyHostEnvironment IWebAssemblyHostEnvironment
+@inject ILocalStorageService localStorage
+@inject IAuthenticationService AuthenticationService
+@inject ISessionAnchor sessionAnchor
 
 <nav class="navbar header-navbar p-0">
     <button class="navbar-toggler bg-primary d-block" @onclick="OnToggleClick">
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="header">
-        <div class="ml-3 font-weight-bold title pr-4">COMET Web Application</div>
-
-        <div class="px-4">
-            <AuthorizeView>
-                <Authorized>
-                    <a href="logout"  @onclick="@(() => PopupVisible = false)">Log out</a>
-                </Authorized>
-                <NotAuthorized>
-                    <a href="" @onclick="@(() => PopupVisible = true)">Log in</a>
-                    <DxPopup HeaderText="Login" @bind-Visible="@PopupVisible">
-                        <Login />
-                    </DxPopup>
-                </NotAuthorized>
-            </AuthorizeView>
-            <a href="https://github.com/RHEAGROUP/COMET-WEB-Community-Edition" target="_blank" class="m-left-3px">About</a>
-        </div>
+        @if (IWebAssemblyHostEnvironment.IsDevelopment())
+        {
+            <div class="ml-3 font-weight-bold title pr-4">COMET Web Application Development</div>
+        } else
+        {
+            <div class="ml-3 font-weight-bold title pr-4">COMET Web Application</div>
+        
+            <div class="px-4">
+                <AuthorizeView>
+                    <Authorized>
+                        <a href="logout"  @onclick="@(() => Logout())">Log out</a>
+                    </Authorized>
+                    <NotAuthorized>
+                        @if (!this.isAuthenticated)
+                        {
+                            <a href="" @onclick="@(() => PopupVisible = true)">Log in</a>
+                        }
+                        <DxPopup HeaderText="Login" @bind-Visible="@PopupVisible">
+                            <Login />
+                        </DxPopup>   
+                    </NotAuthorized>
+                </AuthorizeView>
+                <a href="https://github.com/RHEAGROUP/COMET-WEB-Community-Edition" target="_blank" class="m-left-3px">About</a>
+            </div>
+        }
     </div>
 
 </nav>
@@ -55,6 +68,35 @@
     /// Boolean to determine if the Popup Login is visible
     /// </summary>
     bool PopupVisible = false;
+
+    public void Logout()
+    {
+        PopupVisible = false;
+        isAuthenticated = false;
+    }
+
+    bool isAuthenticated { get; set; }
+    bool isLoading { get; set; } = false;
+
+    protected override async void OnInitialized()
+    {
+        var result = await localStorage.ContainKeyAsync("authentication");
+        if (result)
+        {
+            isAuthenticated = true;
+            ShouldRender();
+            Connecting();
+        } else
+        {
+            isAuthenticated = false;
+        }
+    }
+
+    async void Connecting()
+    {
+        var authentication = await localStorage.GetItemAsync<AuthenticationDto>("authentication");
+        await AuthenticationService.Login(authentication);
+    }
 
     async Task Toggle(bool? value = null) {
         var newValue = value ?? !ToggleOn;

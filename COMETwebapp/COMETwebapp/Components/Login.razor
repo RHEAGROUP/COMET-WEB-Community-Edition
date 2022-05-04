@@ -73,9 +73,5 @@ Copyright (c) 2022 RHEA System S.A.
     public async Task ExecuteLogin()
     {
         var result = await AuthenticationService.Login(AuthenticationDto);
-        if (result)
-        {
-            NavigationManager.NavigateTo("/");
-        }
     }
 }

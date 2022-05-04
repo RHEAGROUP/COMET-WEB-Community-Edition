@@ -21,6 +21,7 @@ Copyright (c) 2022 RHEA System S.A.
 ------------------------------------------------------------------------------->
 @inject ISessionAnchor ISessionAnchor 
 @inject NavigationManager NavigationManager
+@inject ILocalStorageService LocalStorage
 
 <EditForm Model="SelectedModelInformation" OnValidSubmit="OpenAModel">
     <div class="form-group row">
@@ -122,9 +123,22 @@ Copyright (c) 2022 RHEA System S.A.
     /// <summary>
     /// Initialize <see cref="ModelSetups"/> according to the opened Session and the <see cref="ActivePerson"/>
     /// </summary>
-    protected override void OnInitialized()
+    protected override async void OnInitialized()
     {
         this.ModelSetups.AddRange(this.ISessionAnchor.GetParticipantModels());
+        var result = await LocalStorage.ContainKeyAsync("SelectedModel");
+        if (result)
+        {
+            this.SelectedModelInformation = await LocalStorage.GetItemAsync<ModelInformation>("SelectedModel");
+            foreach (var model in ISessionAnchor.GetSiteDirectory().Model)
+            {
+                if (model.Name.Equals(this.SelectedModelInformation.EngineeringModelSetupName))
+                {
+                    this.SelectedEngineeringModelSetup = model;
+                }
+            }
+            this.OpenAModel();
+        }
     }
 
     /// <summary>
@@ -148,6 +162,8 @@ Copyright (c) 2022 RHEA System S.A.
     /// </summary>
     public async void OpenAModel()
     {
+        await LocalStorage.SetItemAsync("SelectedModel", this.SelectedModelInformation);
+
         foreach (var domain in this.Domains)
         {
             if (domain.Name.Equals(this.SelectedModelInformation.DomainOfExpertiseName))

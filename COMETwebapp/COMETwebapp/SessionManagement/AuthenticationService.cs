@@ -24,14 +24,13 @@
 
 namespace COMETwebapp.SessionManagement
 {
-    using CDP4Common.SiteDirectoryData;
-    using CDP4Common.Types;
     using CDP4Dal;
     using CDP4Dal.DAL;
     using CDP4ServicesDal;
     using Microsoft.AspNetCore.Components.Authorization;
     using System;
-    using System.Collections.Generic;
+    using Blazored.LocalStorage;
+    using CDP4JsonFileDal;
 
     /// <summary>
     /// The purpose of the <see cref="AuthenticationService"/> is to authenticate against
@@ -44,6 +43,8 @@ namespace COMETwebapp.SessionManagement
         /// </summary>
         private readonly AuthenticationStateProvider authStateProvider;
 
+        private readonly ILocalStorageService localStorageService;
+        
         /// <summary>
         /// The (injected) <see cref="ISessionAnchor"/> that provides access to the <see cref="ISession"/>
         /// </summary>
@@ -58,10 +59,11 @@ namespace COMETwebapp.SessionManagement
         /// <param name="authenticationStateProvider">
         /// The (injected) <see cref="AuthenticationStateProvider"/>
         /// </param>
-        public AuthenticationService(ISessionAnchor sessionAnchor, AuthenticationStateProvider authenticationStateProvider)
+        public AuthenticationService(ISessionAnchor sessionAnchor, AuthenticationStateProvider authenticationStateProvider, ILocalStorageService localStorage)
         {
             this.authStateProvider = authenticationStateProvider;
             this.sessionAnchor = sessionAnchor;
+            this.localStorageService = localStorage;
         }
 
         /// <summary>
@@ -85,6 +87,10 @@ namespace COMETwebapp.SessionManagement
 
             ((CometWebAuthStateProvider)this.authStateProvider).NotifyAuthenticationStateChanged();
 
+            if (this.sessionAnchor.IsSessionOpen) { 
+                await localStorageService.SetItemAsync("authentication", authenticationDto);
+            }
+
             return this.sessionAnchor.IsSessionOpen;
         }
 
@@ -99,10 +105,10 @@ namespace COMETwebapp.SessionManagement
             if (this.sessionAnchor.Session != null)
             {
                 await this.sessionAnchor.Close();
+                await this.localStorageService.ClearAsync();
             }
      
             ((CometWebAuthStateProvider)this.authStateProvider).NotifyAuthenticationStateChanged();
         }
-        
     }
 }

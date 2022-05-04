@@ -29,6 +29,7 @@ namespace COMETwebapp.SessionManagement
     using CDP4Dal;
     using System.Collections.Generic;
     using NLog;
+    using Blazored.LocalStorage;
 
     /// <summary>
     /// The purpose of the <see cref="SessionAnchor"/> is to provide access to
@@ -105,6 +106,7 @@ namespace COMETwebapp.SessionManagement
             {
                 this.logger.Error($"During read operation an error has occured: {exception.Message}");
             }
+
             if (this.GetIteration() != null)
             {
                 this.OpenIteration = this.GetIteration().First().Key;

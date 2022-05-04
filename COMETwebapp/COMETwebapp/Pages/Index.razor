@@ -31,13 +31,13 @@ Copyright (c) 2022 RHEA System S.A.
                     <button type="submit" class="btn btn-connect" @onclick="@(() => PopupVisible = true)">Open a Model</button>
                 </div>
                 <DxPopup HeaderText="Engineering Models" @bind-Visible="@PopupVisible">
-                    <OpenModel />
+                    <OpenModel/>
                 </DxPopup>
             </Authorized>
             <NotAuthorized>
                 Welcome to the COMET Web Application!
             </NotAuthorized>
-        </AuthorizeView>    
+        </AuthorizeView>  
     </h1>
 </div>
 
